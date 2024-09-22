@@ -93,6 +93,7 @@ export class CustomQueryBuilderComponent {
             },
           },
           {
+            // This input field will be visible for string and number types
             key: 'value',
             type: 'input',
             templateOptions: {
@@ -100,15 +101,50 @@ export class CustomQueryBuilderComponent {
               required: true,
             },
             expressions: {
+              hide: (field: FormlyFieldConfig) => {
+                const selectedField = fieldDefinitions.find(
+                  (f) => f.key === field.form?.value.field
+                );
+                return selectedField?.type === 'enum'; // Hide if enum
+              },
               'templateOptions.type': (field: FormlyFieldConfig) => {
                 const selectedField = fieldDefinitions.find(
                   (f) => f.key === field.form?.value.field
                 );
-                if (selectedField) {
-                  // Use "number" type for input if the field is of number type
-                  return selectedField.type === 'number' ? 'number' : 'text';
+                return selectedField?.type === 'number' ? 'number' : 'text'; // Input type based on field type
+              },
+            },
+          },
+          {
+            // This select field will be visible for enum types
+            key: 'value',
+            type: 'select',
+
+            templateOptions: {
+              label: 'Value',
+              required: true,
+              options: [], // Options will be populated dynamically
+            },
+            expressions: {
+              hide: (field: FormlyFieldConfig) => {
+                const selectedField = fieldDefinitions.find(
+                  (f) => f.key === field.form?.value.field
+                );
+                return selectedField?.type !== 'enum'; // Show only if enum
+              },
+              'templateOptions.options': (field: FormlyFieldConfig) => {
+                const selectedField = fieldDefinitions.find(
+                  (f) => f.key === field.form?.value.field
+                );
+                if (selectedField?.type === 'enum') {
+                  return (
+                    selectedField.options?.map((option) => ({
+                      value: option,
+                      label: option,
+                    })) || []
+                  );
                 }
-                return 'text';
+                return [];
               },
             },
           },
