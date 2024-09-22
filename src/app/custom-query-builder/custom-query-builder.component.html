@@ -1,0 +1,14 @@
+<div class="container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit(model)">
+    <formly-form [form]="form" [model]="model" [fields]="fields"> </formly-form>
+
+    <div class="d-flex justify-content-between mt-2">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+  </form>
+
+  <div class="mt-3">
+    <h5>Generated Query:</h5>
+    <pre>{{ model | json }}</pre>
+  </div>
+</div>
