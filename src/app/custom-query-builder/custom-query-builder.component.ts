@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 
 // Field and operator definitions
-const fieldDefinitions = [
+let fieldDefinitions = [
   { key: 'name', label: 'Name', type: 'string' },
   { key: 'age', label: 'Age', type: 'number' },
   {
@@ -46,7 +46,8 @@ const operatorDefinitions: Record<
   templateUrl: './custom-query-builder.component.html',
 })
 export class CustomQueryBuilderComponent {
-  form = new FormGroup({});
+  form: FormGroup;
+  options: string[] = ['Person', 'Company'];
   model: any = {
     filters: [],
   };
@@ -66,10 +67,14 @@ export class CustomQueryBuilderComponent {
             templateOptions: {
               label: 'Field',
               required: true,
-              options: fieldDefinitions.map((field) => ({
-                value: field.key,
-                label: field.label,
-              })),
+            },
+            expressions: {
+              'templateOptions.options': (field: FormlyFieldConfig) => {
+                return fieldDefinitions.map((field) => ({
+                  value: field.key,
+                  label: field.label,
+                }));
+              },
             },
           },
           {
@@ -157,8 +162,48 @@ export class CustomQueryBuilderComponent {
       },
     },
   ];
+  constructor(private fb: FormBuilder) {
+    this.form = this.fb.group({
+      selectedType: [''],
+    });
+  }
+
+  ngOnInit(): void {
+    if (this.options.length > 0) {
+      this.form.get('selectedType')?.setValue(this.options[0]);
+    }
+  }
 
   onSubmit(model: any) {
     console.log('Query:', model);
+  }
+
+  onTypeSelected(event: any) {
+    const type = this.form.get('selectedType')?.value;
+    console.log('Selected:', type);
+
+    if (type === 'Person') {
+      fieldDefinitions = [
+        { key: 'name', label: 'Name', type: 'string' },
+        { key: 'age', label: 'Age', type: 'number' },
+        {
+          key: 'status',
+          label: 'Status',
+          type: 'enum',
+          options: ['Active', 'Inactive', 'Pending'],
+        },
+      ];
+    } else if (type === 'Company') {
+      fieldDefinitions = [
+        { key: 'name', label: 'Name', type: 'string' },
+        { key: 'revenue', label: 'Revenue', type: 'number' },
+        {
+          key: 'isActive',
+          label: 'Is active',
+          type: 'enum',
+          options: ['yes', 'no'],
+        },
+      ];
+    }
   }
 }

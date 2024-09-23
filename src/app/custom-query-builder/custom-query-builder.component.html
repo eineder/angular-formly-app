@@ -1,5 +1,19 @@
 <div class="container">
   <form [formGroup]="form" (ngSubmit)="onSubmit(model)">
+    <div class="form-group">
+      <label for="typeSelect">Select type</label>
+      <select
+        id="typeSelect"
+        class="form-control"
+        formControlName="selectedType"
+        (change)="onTypeSelected($event)"
+      >
+        <option *ngFor="let option of options" [value]="option">
+          {{ option }}
+        </option>
+      </select>
+    </div>
+
     <formly-form [form]="form" [model]="model" [fields]="fields"> </formly-form>
 
     <div class="d-flex justify-content-between mt-2">
