@@ -57,8 +57,10 @@ export class CustomQueryBuilderComponent {
       key: 'filters',
       type: 'repeat',
       fieldArray: {
+        fieldGroupClassName: 'row',
         fieldGroup: [
           {
+            className: 'col-4',
             key: 'field',
             type: 'select',
             templateOptions: {
@@ -71,6 +73,7 @@ export class CustomQueryBuilderComponent {
             },
           },
           {
+            className: 'col-4',
             key: 'operator',
             type: 'select',
             templateOptions: {
@@ -93,6 +96,7 @@ export class CustomQueryBuilderComponent {
             },
           },
           {
+            className: 'col-4',
             // This input field will be visible for string and number types
             key: 'value',
             type: 'input',
@@ -116,6 +120,7 @@ export class CustomQueryBuilderComponent {
             },
           },
           {
+            className: 'col-4',
             // This select field will be visible for enum types
             key: 'value',
             type: 'select',
