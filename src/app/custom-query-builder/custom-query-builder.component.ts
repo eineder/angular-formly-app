@@ -1,18 +1,15 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
+import { SearchService } from '../services/search.service';
 
 // Field and operator definitions
-let fieldDefinitions = [
-  { key: 'name', label: 'Name', type: 'string' },
-  { key: 'age', label: 'Age', type: 'number' },
-  {
-    key: 'status',
-    label: 'Status',
-    type: 'enum',
-    options: ['Active', 'Inactive', 'Pending'],
-  },
-];
+let fieldDefinitions: {
+  key: string;
+  label: string;
+  type: string;
+  options: string[];
+}[] = [];
 
 type FieldType = 'string' | 'number' | 'enum';
 
@@ -47,7 +44,7 @@ const operatorDefinitions: Record<
 })
 export class CustomQueryBuilderComponent {
   form: FormGroup;
-  options: string[] = ['Person', 'Company'];
+  options: string[] = [];
   model: any = {
     filters: [],
   };
@@ -70,7 +67,7 @@ export class CustomQueryBuilderComponent {
             },
             expressions: {
               'templateOptions.options': (field: FormlyFieldConfig) => {
-                return fieldDefinitions.map((field) => ({
+                return fieldDefinitions?.map((field) => ({
                   value: field.key,
                   label: field.label,
                 }));
@@ -114,7 +111,7 @@ export class CustomQueryBuilderComponent {
                 const selectedField = fieldDefinitions.find(
                   (f) => f.key === field.form?.value.field
                 );
-                return selectedField?.type === 'enum'; // Hide if enum
+                return selectedField?.options; // Hide if options are defined
               },
               'templateOptions.type': (field: FormlyFieldConfig) => {
                 const selectedField = fieldDefinitions.find(
@@ -140,13 +137,13 @@ export class CustomQueryBuilderComponent {
                 const selectedField = fieldDefinitions.find(
                   (f) => f.key === field.form?.value.field
                 );
-                return selectedField?.type !== 'enum'; // Show only if enum
+                return !selectedField?.options; // Hide if no options are defined
               },
               'templateOptions.options': (field: FormlyFieldConfig) => {
                 const selectedField = fieldDefinitions.find(
                   (f) => f.key === field.form?.value.field
                 );
-                if (selectedField?.type === 'enum') {
+                if (selectedField?.options) {
                   return (
                     selectedField.options?.map((option) => ({
                       value: option,
@@ -162,16 +159,21 @@ export class CustomQueryBuilderComponent {
       },
     },
   ];
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private searchService: SearchService) {
     this.form = this.fb.group({
       selectedType: [''],
     });
   }
 
   ngOnInit(): void {
-    if (this.options.length > 0) {
-      this.form.get('selectedType')?.setValue(this.options[0]);
-    }
+    this.searchService.getTypeNames().subscribe((types) => {
+      this.options = types;
+      if (this.options.length > 0) {
+        this.form.get('selectedType')?.setValue(this.options[0]);
+      }
+
+      this.onTypeSelected({});
+    });
   }
 
   onSubmit(model: any) {
@@ -182,28 +184,15 @@ export class CustomQueryBuilderComponent {
     const type = this.form.get('selectedType')?.value;
     console.log('Selected:', type);
 
-    if (type === 'Person') {
-      fieldDefinitions = [
-        { key: 'name', label: 'Name', type: 'string' },
-        { key: 'age', label: 'Age', type: 'number' },
-        {
-          key: 'status',
-          label: 'Status',
-          type: 'enum',
-          options: ['Active', 'Inactive', 'Pending'],
-        },
-      ];
-    } else if (type === 'Company') {
-      fieldDefinitions = [
-        { key: 'name', label: 'Name', type: 'string' },
-        { key: 'revenue', label: 'Revenue', type: 'number' },
-        {
-          key: 'isActive',
-          label: 'Is active',
-          type: 'enum',
-          options: ['yes', 'no'],
-        },
-      ];
-    }
+    this.searchService.getSchema(type).subscribe((data) => {
+      const schema = data[0].schema;
+      const fields = Object.keys(schema.properties).map((key) => ({
+        key,
+        label: key,
+        type: schema.properties[key].type,
+        options: schema.properties[key].enum,
+      }));
+      fieldDefinitions = fields;
+    });
   }
 }

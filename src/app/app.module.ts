@@ -7,6 +7,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { CustomQueryBuilderComponent } from './custom-query-builder/custom-query-builder.component';
 import { RepeatTypeComponent } from './repeat-section.type';
+import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
+import { InMemoryDataService } from './services/in-memory-data.service';
+import { SearchService } from './services/search.service';
 
 @NgModule({
   declarations: [
@@ -18,12 +21,13 @@ import { RepeatTypeComponent } from './repeat-section.type';
     BrowserModule,
     ReactiveFormsModule,
     HttpClientModule,
+    HttpClientInMemoryWebApiModule.forRoot(InMemoryDataService, { delay: 500 }), // delay is optional
     FormlyModule.forRoot({
       types: [{ name: 'repeat', component: RepeatTypeComponent }],
     }),
     FormlyBootstrapModule,
   ],
-  providers: [],
+  providers: [SearchService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
